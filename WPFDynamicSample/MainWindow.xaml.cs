@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,5 +25,117 @@ namespace WPFDynamicSample
         {
             InitializeComponent();
         }
+
+        private WPFDynamicSample.Models.SampleClass sample = new Models.SampleClass();
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var button = new Button() { Content = "Added Button" };
+            button.Command = new CtrlCommand<Button>(button, (b, p) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"pressed {p?.ToString() ?? string.Empty} {b?.Content.ToString() ?? string.Empty}");
+                b.Content = "Pressed button";
+            }
+            );
+            Stack4Control.Children.Add(button);
+
+        }
+
+        private void AddClassButton_Click(object sender, RoutedEventArgs e)
+        {
+            sample.SetStringProperty("Test");
+
+            var t = sample.GetType();
+
+            var members = t.GetMembers(
+                BindingFlags.Public |
+                BindingFlags.Instance |
+                BindingFlags.DeclaredOnly
+                );
+            foreach (var m in members)
+            {
+                System.Diagnostics.Debug.WriteLine($"[{m.Name}] - [{m.MemberType}]");
+                switch (m.MemberType)
+                {
+                    case MemberTypes.Method:
+                        var mi1 = t.GetMethod(m.Name);
+
+                        System.Diagnostics.Debug.WriteLine($"  {mi1?.ToString() ?? "GetMethod is failed"}");
+                        System.Diagnostics.Debug.WriteLine($"    {mi1?.ReturnType.ToString() ?? string.Empty}");
+                        foreach (var pi in mi1?.GetParameters() ?? null)
+                        {
+                            //                            System.Diagnostics.Debug.WriteLine($"      {pi.ToString()}");
+                            System.Diagnostics.Debug.WriteLine($"     Name: {pi.Name}");
+                            System.Diagnostics.Debug.WriteLine($"     Type: {pi.ParameterType.ToString()}");
+                            System.Diagnostics.Debug.WriteLine($"     Member: {pi.Member}");
+                            System.Diagnostics.Debug.WriteLine($"       [{pi.ToString()}]");
+                            switch (pi.ParameterType.ToString())
+                            {
+                                case "System.String":
+                                    var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                    var edit = new TextBox() { Text =  (property?.GetValue(sample) ?? string.Empty) as string };
+                                    edit.TextChanged += (s,ev) => {
+                                        property.SetValue(sample, edit.Text);
+                                        System.Diagnostics.Debug.WriteLine($"==> {sample.StringProperty}");
+                                    };
+                                    Stack4Control.Children.Add(edit);
+                                    break;
+
+                            default:
+                                    break;
+                        }
+
+
+
+                }
+
+                break;
+                default:
+                        System.Diagnostics.Debug.WriteLine($"  --");
+                break;
+            }
+        }
+
+
+        string GuessPropertyName(string methodName)
+        {
+            string propertyName = methodName;
+
+            if (methodName.Contains("Set"))
+            {
+                propertyName = methodName.Remove(0, 3);
+            }
+
+            return propertyName;
+        }
+    }
+
+
+        private class CtrlCommand<T> : ICommand
+        {
+            private CtrlCommand() { }
+
+            public CtrlCommand(T ctrlObj, Action<T, object> action)
+            {
+                this.actionDelegate = action;
+                this.ctrlObj = ctrlObj;
+            }
+            public event EventHandler CanExecuteChanged;
+
+            protected Action<T, object> actionDelegate { get; set; }
+            
+            protected Object ctrlObj { get; set; }
+
+            public bool CanExecute(object parameter)
+            {
+                return true;
+            }
+
+            public void Execute(object parameter)
+            {
+                actionDelegate?.Invoke((T)this.ctrlObj , parameter);
+            }
+        }
+
     }
 }
