@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -69,7 +70,8 @@ namespace WPFDynamicSample
                             System.Diagnostics.Debug.WriteLine($"       [{pi.ToString()}]");
 
 
-                            if (pi.ParameterType.ToString().Equals("System.String")){
+                            if (pi.ParameterType.ToString().Equals("System.String"))
+                            {
                                 var property = t.GetProperty(GuessPropertyName(mi1.Name));
                                 if (property != null)
                                 {
@@ -84,6 +86,38 @@ namespace WPFDynamicSample
                                 }
                                 break;
                             }
+
+                            if ((pi.ParameterType.IsPrimitive)  && (!pi.ParameterType.ToString().Equals("System.Boolean")))
+                            {
+                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                if (property != null)
+                                {
+                                    var edit = new TextBox() { Text = (property?.GetValue(sample) ?? string.Empty) as string };
+                                    edit.PreviewTextInput += (s_t, ev_t) =>
+                                    {
+                                        try{
+
+                                            TypeDescriptor.GetConverter(pi.ParameterType).ConvertFromString(ev_t.Text);
+                                            ev_t.Handled = false;
+                                        }
+                                        catch
+                                        {
+                                            ev_t.Handled = true;
+                                        }
+                                        System.Diagnostics.Debug.WriteLine($"=====> {ev_t.Text} - {ev_t.Handled}");
+                                    };
+                                    edit.TextChanged += (s, ev) =>
+                                    {
+                                        property.SetValue(sample, Parse(pi.ParameterType, edit.Text));
+                                        System.Diagnostics.Debug.WriteLine($"==> {edit.Text} - {sample.IntProperty}");
+                                    };
+                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
+                                    Stack4Control.Children.Add(edit);
+                                }
+                                break;
+                            }
+
+
 
                             if (pi.ParameterType.IsEnum)
                             {
@@ -115,11 +149,11 @@ namespace WPFDynamicSample
                                 if (property != null)
                                 {
                                     var checkBox = new CheckBox() { IsChecked = (bool)(property?.GetValue(sample) ?? false) };
-                                    checkBox.Click  += (s, ev) =>
-                                    {
-                                        property.SetValue(sample, checkBox.IsChecked);
-                                        System.Diagnostics.Debug.WriteLine($"==> {sample.BoolProperty}");
-                                    };
+                                    checkBox.Click += (s, ev) =>
+                                   {
+                                       property.SetValue(sample, checkBox.IsChecked);
+                                       System.Diagnostics.Debug.WriteLine($"==> {sample.BoolProperty}");
+                                   };
                                     Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
                                     Stack4Control.Children.Add(checkBox);
                                 }
@@ -135,8 +169,14 @@ namespace WPFDynamicSample
                         System.Diagnostics.Debug.WriteLine($"  --");
                         break;
                 }
+            }
+
         }
 
+        private object Parse(Type parameterType, string text)
+        {
+            return TypeDescriptor.GetConverter(parameterType).ConvertFromString(text);
+        }
 
         string GuessPropertyName(string methodName)
         {
@@ -149,7 +189,7 @@ namespace WPFDynamicSample
 
             return propertyName;
         }
-    }
+
 
 
         private class CtrlCommand<T> : ICommand
