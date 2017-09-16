@@ -26,7 +26,7 @@ namespace WPFDynamicSample
             InitializeComponent();
         }
 
-        private WPFDynamicSample.Models.SampleClass sample = new Models.SampleClass();
+        private static WPFDynamicSample.Models.SampleClass sample = new Models.SampleClass();
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -43,8 +43,6 @@ namespace WPFDynamicSample
 
         private void AddClassButton_Click(object sender, RoutedEventArgs e)
         {
-            sample.SetStringProperty("Test");
-
             var t = sample.GetType();
 
             var members = t.GetMembers(
@@ -69,31 +67,58 @@ namespace WPFDynamicSample
                             System.Diagnostics.Debug.WriteLine($"     Type: {pi.ParameterType.ToString()}");
                             System.Diagnostics.Debug.WriteLine($"     Member: {pi.Member}");
                             System.Diagnostics.Debug.WriteLine($"       [{pi.ToString()}]");
-                            switch (pi.ParameterType.ToString())
-                            {
-                                case "System.String":
-                                    var property = t.GetProperty(GuessPropertyName(mi1.Name));
-                                    var edit = new TextBox() { Text =  (property?.GetValue(sample) ?? string.Empty) as string };
-                                    edit.TextChanged += (s,ev) => {
+
+
+                            if (pi.ParameterType.ToString().Equals("System.String")){
+                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                if (property != null)
+                                {
+                                    var edit = new TextBox() { Text = (property?.GetValue(sample) ?? string.Empty) as string };
+                                    edit.TextChanged += (s, ev) =>
+                                    {
                                         property.SetValue(sample, edit.Text);
                                         System.Diagnostics.Debug.WriteLine($"==> {sample.StringProperty}");
                                     };
+                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
                                     Stack4Control.Children.Add(edit);
-                                    break;
+                                }
+                                break;
+                            }
 
-                            default:
-                                    break;
+                            if (pi.ParameterType.IsEnum)
+                            {
+                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                if (property != null)
+                                {
+                                    var comboBox = new ComboBox();
+
+                                    foreach (var a in Enum.GetValues(pi.ParameterType))
+                                    {
+                                        comboBox.Items.Add(a);
+                                    }
+
+                                    comboBox.SelectionChanged += (s_e, ea_e) =>
+                                    {
+                                        property.SetValue(sample, comboBox.SelectedItem);
+                                        System.Diagnostics.Debug.WriteLine($"==> {sample.EnumProperty}");
+                                    };
+
+                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
+                                    Stack4Control.Children.Add(comboBox);
+                                }
+                                break;
+                            }
+
+
                         }
 
 
+                        break;
 
-                }
-
-                break;
-                default:
+                    default:
                         System.Diagnostics.Debug.WriteLine($"  --");
-                break;
-            }
+                        break;
+                }
         }
 
 

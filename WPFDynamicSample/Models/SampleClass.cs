@@ -22,5 +22,7 @@ namespace WPFDynamicSample.Models
         public string StringProperty { get; private set; }
         public void SetStringProperty(string value){ StringProperty = value; }
 
+        
+
     }
 }
