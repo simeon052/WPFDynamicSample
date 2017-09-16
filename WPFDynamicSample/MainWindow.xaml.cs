@@ -109,6 +109,22 @@ namespace WPFDynamicSample
                                 break;
                             }
 
+                            if (pi.ParameterType.ToString().Equals("System.Boolean"))
+                            {
+                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                if (property != null)
+                                {
+                                    var checkBox = new CheckBox() { IsChecked = (bool)(property?.GetValue(sample) ?? false) };
+                                    checkBox.Click  += (s, ev) =>
+                                    {
+                                        property.SetValue(sample, checkBox.IsChecked);
+                                        System.Diagnostics.Debug.WriteLine($"==> {sample.BoolProperty}");
+                                    };
+                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
+                                    Stack4Control.Children.Add(checkBox);
+                                }
+                                break;
+                            }
 
                         }
 

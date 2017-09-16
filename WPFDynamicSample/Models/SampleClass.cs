@@ -19,10 +19,12 @@ namespace WPFDynamicSample.Models
         public TestEnum EnumProperty { get; private set; }
         public void SetEnumProperty(TestEnum value) { EnumProperty = value; }
 
+
         public string StringProperty { get; private set; }
         public void SetStringProperty(string value){ StringProperty = value; }
 
-        
+        public bool BoolProperty { get; private set; }
+        public void SetBoolProperty(bool value){ BoolProperty = value; }
 
     }
 }
