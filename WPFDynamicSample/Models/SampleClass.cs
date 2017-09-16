@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +12,16 @@ namespace WPFDynamicSample.Models
             Item1,
             Item2,
             Item3,
+        }
+
+        public SampleClass()
+        {
+            if (ArrayProperty == null)
+            {
+                ArrayProperty = new List<string>();
+                ArrayProperty.Add("Test1");
+                ArrayProperty.Add("Test2");
+            }
         }
 
         public int IntProperty { get; private set; }
@@ -26,5 +37,9 @@ namespace WPFDynamicSample.Models
         public bool BoolProperty { get; private set; }
         public void SetBoolProperty(bool value){ BoolProperty = value; }
 
+        public List<string> ArrayProperty { get; private set; }
+        public void AddRangeArrayProperty (IEnumerable<string> values) {
+            ArrayProperty.AddRange(values);
+        }
     }
 }

@@ -56,6 +56,12 @@ namespace WPFDynamicSample
                 System.Diagnostics.Debug.WriteLine($"[{m.Name}] - [{m.MemberType}]");
                 switch (m.MemberType)
                 {
+                    case MemberTypes.Property:
+                        if (typeof(System.Collections.IEnumerable).IsAssignableFrom(m.GetType()))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"{m.Name} is enumerable");
+                        }
+                        break;
                     case MemberTypes.Method:
                         var mi1 = t.GetMethod(m.Name);
 
@@ -68,6 +74,27 @@ namespace WPFDynamicSample
                             System.Diagnostics.Debug.WriteLine($"     Type: {pi.ParameterType.ToString()}");
                             System.Diagnostics.Debug.WriteLine($"     Member: {pi.Member}");
                             System.Diagnostics.Debug.WriteLine($"       [{pi.ToString()}]");
+
+                            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(pi.ParameterType))
+                            {
+                                System.Diagnostics.Debug.WriteLine($"------------ {mi1.Name} has enumerable argument");
+                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                if(property != null)
+                                {
+                                    var listBox = new ListBox();
+                                    var list = property?.GetMethod.Invoke(sample, null) as IEnumerable<string>;
+                                    if (list != null)
+                                    {
+                                        foreach (var a in list)
+                                        {
+                                            listBox.Items.Add(a);
+                                        }
+                                    }
+                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
+                                    Stack4Control.Children.Add(listBox);
+                                }
+
+                            }
 
 
                             if (pi.ParameterType.ToString().Equals("System.String"))
@@ -185,6 +212,10 @@ namespace WPFDynamicSample
             if (methodName.Contains("Set"))
             {
                 propertyName = methodName.Remove(0, 3);
+            }
+             if (methodName.Contains("AddRange"))
+            {
+                propertyName = methodName.Remove(0, 8);
             }
 
             return propertyName;
