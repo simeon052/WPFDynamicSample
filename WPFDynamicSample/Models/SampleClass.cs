@@ -14,6 +14,8 @@ namespace WPFDynamicSample.Models
             Item3,
         }
 
+
+
         public SampleClass()
         {
             if (ArrayProperty == null)
@@ -21,6 +23,13 @@ namespace WPFDynamicSample.Models
                 ArrayProperty = new List<string>();
                 ArrayProperty.Add("Test1");
                 ArrayProperty.Add("Test2");
+            }
+
+            if(ContainerProperty == null)
+            {
+                ContainerProperty = new List<InfoContainer>();
+                ContainerProperty.Add(new InfoContainer() { Name = "John", Detail="aaa", ID=0 });
+                ContainerProperty.Add(new InfoContainer() { Name = "Sam", Detail = "bbb", ID = 2 });
             }
         }
 
@@ -40,6 +49,24 @@ namespace WPFDynamicSample.Models
         public List<string> ArrayProperty { get; private set; }
         public void AddRangeArrayProperty (IEnumerable<string> values) {
             ArrayProperty.AddRange(values);
+        }
+
+        public List<InfoContainer> ContainerProperty { get; private set; }
+        public void AddRangeContainerProperty (IEnumerable<InfoContainer> values) {
+            ContainerProperty.AddRange(values);
+        }
+
+    }
+
+    public class InfoContainer
+    {
+        public string Name { get; set; }
+        public string Detail { get; set; }
+        public int ID { get; set; }
+
+        public override string ToString()
+        {
+            return $"{ID} - {Name} - {Detail} ";
         }
     }
 }

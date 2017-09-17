@@ -75,26 +75,7 @@ namespace WPFDynamicSample
                             System.Diagnostics.Debug.WriteLine($"     Member: {pi.Member}");
                             System.Diagnostics.Debug.WriteLine($"       [{pi.ToString()}]");
 
-                            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(pi.ParameterType))
-                            {
-                                System.Diagnostics.Debug.WriteLine($"------------ {mi1.Name} has enumerable argument");
-                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
-                                if(property != null)
-                                {
-                                    var listBox = new ListBox();
-                                    var list = property?.GetMethod.Invoke(sample, null) as IEnumerable<string>;
-                                    if (list != null)
-                                    {
-                                        foreach (var a in list)
-                                        {
-                                            listBox.Items.Add(a);
-                                        }
-                                    }
-                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
-                                    Stack4Control.Children.Add(listBox);
-                                }
 
-                            }
 
 
                             if (pi.ParameterType.ToString().Equals("System.String"))
@@ -112,6 +93,31 @@ namespace WPFDynamicSample
                                     Stack4Control.Children.Add(edit);
                                 }
                                 break;
+                            }
+
+                            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(pi.ParameterType))
+                            {
+                                System.Diagnostics.Debug.WriteLine($"------------ {mi1.Name} has enumerable argument");
+                                var property = t.GetProperty(GuessPropertyName(mi1.Name));
+                                if(property != null)
+                                {
+                                    var pType = property.PropertyType;
+
+                                    var listBox = new ListBox();
+                                    //var list = TypeDescriptor.GetConverter(property.PropertyType).ConvertFrom(property?.GetMethod.Invoke(sample, null)) as IEnumerable<object>;
+                                    var list = property?.GetMethod.Invoke(sample, null) as IEnumerable<object>;
+
+                                    if (list != null)
+                                    {
+                                        foreach (var a in list)
+                                        {
+                                            listBox.Items.Add(a);
+                                        }
+                                    }
+                                    Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
+                                    Stack4Control.Children.Add(listBox);
+                                }
+
                             }
 
                             if ((pi.ParameterType.IsPrimitive)  && (!pi.ParameterType.ToString().Equals("System.Boolean")))
