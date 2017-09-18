@@ -104,7 +104,6 @@ namespace WPFDynamicSample
                                     var pType = property.PropertyType;
 
                                     var listBox = new ListBox();
-                                    //var list = TypeDescriptor.GetConverter(property.PropertyType).ConvertFrom(property?.GetMethod.Invoke(sample, null)) as IEnumerable<object>;
                                     var list = property?.GetMethod.Invoke(sample, null) as IEnumerable<object>;
 
                                     if (list != null)
@@ -114,6 +113,52 @@ namespace WPFDynamicSample
                                             listBox.Items.Add(a);
                                         }
                                     }
+
+                                    var objList = new List<object>();
+
+                                    var lType = list.GetType();
+                                    if (lType.IsGenericType)
+                                    {
+
+                                        foreach(var g in lType.GenericTypeArguments)
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"-- {g.Name}");
+                                            if (g.IsClass && !g.Name.Equals("String"))
+                                            {
+                                                var o = Activator.CreateInstance(g);
+                                                foreach(var gp in g.GetProperties(                
+                                                    BindingFlags.Public |
+                                                    BindingFlags.Instance |
+                                                    BindingFlags.DeclaredOnly))
+                                                {
+                                                    System.Diagnostics.Debug.WriteLine($"---- {gp.Name} - {gp.PropertyType} {gp.CanRead} {gp.CanWrite}");
+                                                    var textBox = new TextBox();
+                                                    textBox.TextChanged += (s, ev) =>
+                                                    {
+                                                        gp.SetValue(o, Parse(gp.PropertyType, textBox.Text) );
+                                                        System.Diagnostics.Debug.WriteLine($"==> {o.ToString()}");
+                                                        objList.Add(o);
+                                                    };
+
+                                                    Stack4Control.Children.Add(new TextBlock() { Text = gp.Name });
+                                                    Stack4Control.Children.Add(textBox);
+                                                }
+
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                    var addButton = new Button() { Content = "Add" };
+                                    addButton.Click += (s_b, s_e) =>
+                                    {
+                                        foreach (var o in objList) { 
+                                            listBox.Items.Add(o);
+                                        }
+                                    };
+                                    Stack4Control.Children.Add(addButton);
                                     Stack4Control.Children.Add(new TextBlock() { Text = property.Name });
                                     Stack4Control.Children.Add(listBox);
                                 }

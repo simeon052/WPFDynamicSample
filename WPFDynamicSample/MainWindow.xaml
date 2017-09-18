@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFDynamicSample"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="625.846" Width="525">
     <Grid x:Name="AddButton">
-        <StackPanel x:Name="Stack4Control" HorizontalAlignment="Left" Height="299" Margin="226,10,0,0" VerticalAlignment="Top" Width="281"/>
+        <StackPanel x:Name="Stack4Control" HorizontalAlignment="Left" Height="575" Margin="226,10,0,0" VerticalAlignment="Top" Width="281"/>
         <Button Content="Add" HorizontalAlignment="Left" Height="27" Margin="14,20,0,0" VerticalAlignment="Top" Width="99" Click="Button_Click"/>
         <Button x:Name="AddClassButton" Content="Add class" HorizontalAlignment="Left" Margin="14,83,0,0" VerticalAlignment="Top" Width="99" Height="24" Click="AddClassButton_Click"/>
 
